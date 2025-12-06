@@ -43,7 +43,7 @@ Backend dibangun menggunakan Node.js yang berjalan pada port `3000`. Server ini 
 
 ### 1. Konfigurasi Server & Database
 
-- **Koneksi MySQL:** Menggunakan library `mysql2` untuk membuat koneksi _pool_ ke database `db_buku_nim`.
+- **Koneksi MySQL:** Menggunakan library `mysql2` untuk membuat koneksi _pool_ ke database `db_buku`.
 - **CORS:** Middleware `cors` diaktifkan agar API dapat diakses dari IP yang berbeda (penting untuk Emulator/Device fisik).
 - **Body Parser:** Mengurai _request body_ bertipe JSON agar bisa dibaca oleh backend.
 
