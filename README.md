@@ -1,6 +1,4 @@
-# Responsi 2 Mobile Paket 3 (NIM Anda)
-
-**Identitas Mahasiswa**
+# Responsi 2 Mobile Paket 3 H1D023096
 
 - **Nama:** Arga Aryanta Indrafata
 - **NIM:** H1D023096
