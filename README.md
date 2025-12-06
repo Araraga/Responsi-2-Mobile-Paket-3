@@ -1,8 +1,10 @@
 # Responsi 2 Mobile Paket 3 (NIM Anda)
 
+**Identitas Mahasiswa**
+
 - **Nama:** Arga Aryanta Indrafata
 - **NIM:** H1D023096
-- **Shift:** C
+- **Shift Baru:** C
 - **Shift Asal:** E
 
 ---
@@ -12,8 +14,7 @@
 Berikut adalah demonstrasi fitur aplikasi mulai dari Registrasi, Login, hingga operasi CRUD (Create, Read, Update, Delete) pada inventaris buku.
 
 <div align="center">
-  <video src="demo_aplikasi.mp4" width="600" controls="controls" type="video/mp4">
-  </video>
+  <img src="assets/demo_aplikasi.gif" alt="Video Demo Aplikasi" width="600"/>
 </div>
 
 ---
@@ -22,107 +23,119 @@ Berikut adalah demonstrasi fitur aplikasi mulai dari Registrasi, Login, hingga o
 
 ### Teknologi yang Digunakan
 
-- **Frontend:** Flutter (Dart)
-- **Backend:** Node.js (Express.js)
-- **Database:** MySQL
-- **HTTP Client:** Package `http`
+- **Frontend:** Flutter (Dart SDK)
+- **Backend:** Node.js (Runtime) dengan Express.js (Framework)
+- **Database:** MySQL (Relational Database Management System)
+- **HTTP Client:** Package `http` untuk komunikasi API
+- **State Management:** `flutter_bloc` (Business Logic Component)
 
-### State Management: Flutter BLoC
+### State Management
 
-Aplikasi ini menggunakan **BLoC (Business Logic Component)** untuk memisahkan logika bisnis dari antarmuka pengguna (UI).
+Aplikasi ini menerapkan arsitektur BLoC untuk memisahkan antara UI dan Business Logic Layer.
 
-- **Pemisahan Concern:** Logic aplikasi tidak bercampur dengan kode UI (`Widgets`). UI hanya bertugas me-render state yang diberikan oleh BLoC.
-- **Event-Driven:** UI mengirimkan _Event_ (contoh: `LoadBukuEvent`, `LoginEvent`), dan BLoC merespons dengan _State_ (contoh: `BukuLoaded`, `AuthSuccess`).
-- **Reactivity:** Menggunakan `BlocBuilder` dan `BlocListener` untuk merespons perubahan data secara _real-time_ tanpa perlu melakukan `setState` manual yang berlebihan.
+1.  **Event-Driven:** UI tidak mengubah state secara langsung, melainkan mengirimkan _Event_ (contoh: `LoginEvent`).
+2.  **State Output:** BLoC memproses event tersebut, melakukan komunikasi data, dan menghasilkan _State_ baru (contoh: `LoginSuccess` atau `LoginFailure`).
+3.  **Traceability:** Memudahkan debugging karena setiap perubahan state dipicu oleh event yang jelas.
 
 ---
 
 ## Spesifikasi API (Backend Node.js)
 
-Backend dibangun menggunakan **Node.js** dan **Express** yang terhubung ke database **MySQL**.
+Backend dibangun menggunakan Node.js yang berjalan pada port `3000`. Server ini bertugas menangani permintaan HTTP dari aplikasi Flutter dan meneruskannya ke database MySQL.
 
-### 1. Autentikasi (`/login`, `/register`)
+### 1. Konfigurasi Server & Database
 
-- **Register (POST):** Menerima `username` dan `password` untuk membuat akun pegawai baru.
-- **Login (POST):** Memverifikasi kredensial. Jika sukses, mengembalikan status `true`.
+- **Koneksi MySQL:** Menggunakan library `mysql2` untuk membuat koneksi _pool_ ke database `db_buku_nim`.
+- **CORS:** Middleware `cors` diaktifkan agar API dapat diakses dari IP yang berbeda (penting untuk Emulator/Device fisik).
+- **Body Parser:** Mengurai _request body_ bertipe JSON agar bisa dibaca oleh backend.
 
-### 2. Inventaris Buku (`/read`, `/create`, `/update`, `/delete`)
+### 2. Endpoint Autentikasi
 
-| Fitur           | Endpoint  | Method | Parameter Body (JSON)                                                              |
-| :-------------- | :-------- | :----- | :--------------------------------------------------------------------------------- |
-| **Lihat Data**  | `/read`   | `GET`  | -                                                                                  |
-| **Tambah Data** | `/create` | `POST` | `judul`, `harga`, `jumlah`, `tanggal_masuk`, `volume`, `penulis`, `penerbit`       |
-| **Ubah Data**   | `/update` | `POST` | `id`, `judul`, `harga`, `jumlah`, `tanggal_masuk`, `volume`, `penulis`, `penerbit` |
-| **Hapus Data**  | `/delete` | `POST` | `id`                                                                               |
+| Method | Endpoint    | Deskripsi Fungsi                                                                                                                 |
+| :----- | :---------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| `POST` | `/register` | Menerima `username` & `password`. Password disimpan langsung (untuk tujuan pembelajaran) atau di-hash (jika menggunakan bcrypt). |
+| `POST` | `/login`    | Mencocokkan input user dengan data di tabel `users`. Mengembalikan JSON `{success: true}` jika valid.                            |
+
+### 3. Endpoint Inventaris Buku
+
+| Method | Endpoint  | Deskripsi Fungsi                                                                                              |
+| :----- | :-------- | :------------------------------------------------------------------------------------------------------------ |
+| `GET`  | `/read`   | Mengambil seluruh baris data dari tabel `buku` dan mengembalikannya dalam format JSON Array `[{...}, {...}]`. |
+| `POST` | `/create` | Menerima payload JSON berisi atribut buku dan menyimpannya ke database menggunakan perintah `INSERT INTO`.    |
+| `POST` | `/update` | Memperbarui data buku berdasarkan `id` yang dikirimkan menggunakan perintah `UPDATE ... WHERE id = ?`.        |
+| `POST` | `/delete` | Menghapus satu baris data buku berdasarkan `id` yang diterima.                                                |
 
 ---
 
-## Penjelasan Kode & Struktur Folder
+## Penjelasan Detail Kode Frontend (Flutter)
 
-Berikut adalah rincian fungsi dari setiap komponen dalam aplikasi:
+Aplikasi ini dibagi menjadi tiga layer utama sesuai prinsip _Clean Architecture_ sederhana:
 
-### 1. Konfigurasi Utama (`main.dart`)
+### 1. Layer Data (`repositories/`)
 
-- **Entry Point:** Fungsi `main()` menjalankan aplikasi.
-- **MultiBlocProvider:** Menyuntikkan (`inject`) `AuthBloc` dan `BukuBloc` ke seluruh pohon widget aplikasi agar state dapat diakses dari halaman manapun.
-- **Theme Data:** Mengatur tema global aplikasi, termasuk warna utama (Coklat/`Colors.brown`), font (`Roboto`), dan gaya input form agar konsisten.
+Layer ini berfungsi sebagai gerbang komunikasi ke dunia luar (API).
 
-### 2. Layer Data (`repositories/`)
+- **`auth_repository.dart`**:
+  - Fungsi `login()`: Mengirim `POST` request. Jika status code 200 dan body merespons sukses, fungsi mengembalikan `true`. Jika gagal, melempar `Exception` yang akan ditangkap oleh BLoC.
+- **`buku_repository.dart`**:
+  - Fungsi `getBuku()`: Melakukan `GET` request ke endpoint `/read`. Respons JSON didecode menjadi `List<dynamic>` yang siap dikonsumsi oleh UI.
+  - Fungsi `saveBuku()`: Cerdas mendeteksi apakah operasi ini adalah **Simpan Baru** atau **Edit** berdasarkan parameter `isEdit`. Jika edit, ia memanggil `/update`, jika baru memanggil `/create`.
 
-Bertugas melakukan komunikasi HTTP request ke server Node.js.
+### 2. Layer Logic (`blocs/`)
 
-- **`auth_repository.dart`:** Menangani request ke endpoint `/login` dan `/register`. Melakukan _parsing_ respons JSON dari server untuk mengecek status keberhasilan login.
-- **`buku_repository.dart`:** Menangani operasi CRUD.
-  - `getBuku()`: Mengambil list data buku dari endpoint `/read`.
-  - `saveBuku()`: Menangani logika simpan, otomatis memilih endpoint `/create` atau `/update` berdasarkan status edit.
-  - `deleteBuku()`: Mengirim request penghapusan data berdasarkan ID.
+Layer ini adalah "otak" aplikasi yang menghubungkan Repository dengan UI.
 
-### 3. Layer Logic (`blocs/`)
+- **`AuthBloc`**:
+  - Mengelola state autentikasi: `AuthInitial` -> `AuthLoading` -> `AuthSuccess` / `AuthFailure`.
+  - Saat `LoginEvent` masuk, BLoC mengubah state jadi Loading, memanggil repo, lalu memancarkan Success jika berhasil. Ini memicu navigasi halaman di UI.
+- **`BukuBloc`**:
+  - Mengelola state data buku.
+  - **CRUD Logic:** Setelah operasi `AddBukuEvent` atau `DeleteBukuEvent` berhasil, BLoC secara otomatis memicu event `LoadBukuEvent` lagi. Ini memastikan daftar buku di layar pengguna selalu _up-to-date_ tanpa perlu refresh manual.
 
-Mengelola state aplikasi berdasarkan event yang diterima.
+### 3. Layer Presentation (`screens/` & `widgets/`)
 
-- **`auth_bloc.dart`:**
-  - Menerima `LoginEvent` -> Mengubah state menjadi `AuthLoading` -> Memanggil Repository -> Mengeluarkan `AuthSuccess` atau `AuthFailure`.
-- **`buku_bloc.dart`:**
-  - Mengelola state list buku (`BukuLoaded`), loading, dan error.
-  - Memastikan data di-refresh (`LoadBukuEvent`) otomatis setelah operasi Tambah/Edit/Hapus berhasil.
+Layer ini berisi kode tampilan yang bereaksi terhadap perubahan State.
 
-### 4. Layer UI - Halaman (`screens/`)
+#### A. Konfigurasi Global (`main.dart`)
 
-- **`login_page.dart` & `register_page.dart`:**
-  - Halaman autentikasi dengan desain modern.
-  - Menggunakan `BlocListener` untuk navigasi otomatis jika login/register sukses, atau menampilkan _Snackbar_ jika gagal.
-- **`home_page.dart` (Halaman Utama):**
-  - **Header Custom:** Menampilkan salam admin dan tombol logout.
-  - **Fitur Search & Sort:** Melakukan filter dan pengurutan data (Harga, Nama, Penulis) di sisi klien (_client-side filtering_) sebelum data ditampilkan ke `ListView`.
-  - **BlocBuilder:** Membangun tampilan berdasarkan state: Loading (Spinner), Loaded (Daftar Buku), atau Error (Pesan Kesalahan).
-- **`form_page.dart` (Tambah/Edit):**
-  - **Reusability:** Satu halaman digunakan untuk dua fungsi (Tambah & Edit). Jika ada data buku yang dikirim, form otomatis terisi (Mode Edit).
-  - **Date Picker:** Mengimplementasikan input tanggal interaktif untuk kolom "Tanggal Masuk".
+- **MultiBlocProvider:** Membungkus `MaterialApp` agar instance `AuthBloc` dan `BukuBloc` dibuat sekali di awal dan dapat diakses (di-_inject_) ke seluruh halaman di bawahnya menggunakan `context.read<T>()`.
+- **ThemeData:** Menetapkan `primarySwatch` ke `Colors.brown` dan font `Roboto` untuk konsistensi visual di seluruh aplikasi.
 
-### 5. Layer UI - Widget Kustom (`widgets/`)
+#### B. Halaman Utama (`home_page.dart`)
 
-- **`book_card.dart`:**
-  - Komponen kartu untuk menampilkan ringkasan buku (Judul, Penulis, Harga, Stok).
-  - Memiliki interaksi: Klik kartu untuk **Edit**, klik ikon tong sampah untuk **Hapus**.
-- **`dialog_popup.dart`:**
-  - Kelas utilitas statis untuk memanggil _Alert Dialog_.
-  - Digunakan untuk konfirmasi Logout dan konfirmasi Hapus data, menjaga kode UI utama tetap bersih.
+- **BlocBuilder:** Widget ini mendengarkan `BukuBloc`.
+  - Jika state `BukuLoading`: Tampilkan `CircularProgressIndicator`.
+  - Jika state `BukuLoaded`: Tampilkan `ListView`.
+  - Jika state `BukuError`: Tampilkan pesan error.
+- **Client-Side Filtering & Sorting:**
+  - Fitur pencarian (`_searchCtrl`) dan pengurutan (`_sortBy`) dilakukan di sisi aplikasi (bukan di query database) menggunakan fungsi `_processList()`. Ini memungkinkan interaksi yang sangat cepat (_snappy_) karena data sudah dimuat di memori.
+
+#### C. Halaman Form (`form_page.dart`)
+
+- **Reusability Logic:** Halaman ini digunakan untuk dua tujuan sekaligus.
+  - **Mode Tambah:** Jika parameter `widget.data` bernilai `null`, form ditampilkan kosong.
+  - **Mode Edit:** Jika `widget.data` berisi objek buku, `TextEditingController` akan diisi secara otomatis (_pre-filled_) dengan data tersebut pada method `initState`.
+- **Date Picker:** Menggunakan `showDatePicker` bawaan Flutter untuk memastikan format tanggal yang dikirim ke server valid dan seragam (`YYYY-MM-DD`).
+
+#### D. Komponen Widget (`widgets/`)
+
+- **`book_card.dart`:** Memecah tampilan item buku menjadi widget terpisah agar kode `HomePage` lebih bersih. Menggunakan `InkWell` untuk mendeteksi ketukan (navigasi ke Edit).
+- **`dialog_popup.dart`:** Sebuah _utility class_ statis untuk menampilkan _Alert Dialog_. Digunakan untuk konfirmasi Logout dan Hapus Data, memastikan kode UI utama tidak "kotor" dengan logika _showDialog_ yang berulang.
 
 ---
 
 ## Screenshot Aplikasi
 
 <p align="center">
-  <img src="assets/screenshots/login.png" alt="Login" width="140"/>
+  <img src="assets/screenshots/login.png" alt="Login" width="150"/>
   &nbsp;
-  <img src="assets/screenshots/register.png" alt="Register" width="140"/>
+  <img src="assets/screenshots/register.png" alt="Register" width="150"/>
   &nbsp;
-  <img src="assets/screenshots/home_list.png" alt="Home" width="140"/>
+  <img src="assets/screenshots/home_list.png" alt="Home" width="150"/>
   &nbsp;
-  <img src="assets/screenshots/search_sort.png" alt="Search" width="140"/>
+  <img src="assets/screenshots/search_sort.png" alt="Search" width="150"/>
   &nbsp;
-  <img src="assets/screenshots/form_add.png" alt="Form" width="140"/>
+  <img src="assets/screenshots/form_add.png" alt="Form" width="150"/>
   &nbsp;
-  <img src="assets/screenshots/dialog_delete.png" alt="Dialog" width="140"/>
+  <img src="assets/screenshots/dialog_delete.png" alt="Dialog" width="150"/>
 </p>
