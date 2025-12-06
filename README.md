@@ -14,7 +14,7 @@
 Berikut adalah demonstrasi fitur aplikasi mulai dari Registrasi, Login, hingga operasi CRUD (Create, Read, Update, Delete) pada inventaris buku.
 
 <div align="center">
-  <img src="assets/demo_aplikasi.gif" alt="Video Demo Aplikasi" width="600"/>
+  <img src="assets/demo_aplikasi.gif" alt="Video Demo Aplikasi" width="1000"/>
 </div>
 
 ---
@@ -127,15 +127,15 @@ Layer ini berisi kode tampilan yang bereaksi terhadap perubahan State.
 ## Screenshot Aplikasi
 
 <p align="center">
-  <img src="assets/screenshots/login.png" alt="Login" width="150"/>
+  <img src="assets/screenshots/login.png" alt="Login" width="130"/>
   &nbsp;
-  <img src="assets/screenshots/register.png" alt="Register" width="150"/>
+  <img src="assets/screenshots/register.png" alt="Register" width="130"/>
   &nbsp;
-  <img src="assets/screenshots/home_list.png" alt="Home" width="150"/>
+  <img src="assets/screenshots/home_list.png" alt="Home" width="130"/>
   &nbsp;
-  <img src="assets/screenshots/search_sort.png" alt="Search" width="150"/>
+  <img src="assets/screenshots/search_sort.png" alt="Search" width="130"/>
   &nbsp;
-  <img src="assets/screenshots/form_add.png" alt="Form" width="150"/>
+  <img src="assets/screenshots/form_add.png" alt="Form" width="130"/>
   &nbsp;
-  <img src="assets/screenshots/dialog_delete.png" alt="Dialog" width="150"/>
+  <img src="assets/screenshots/dialog_delete.png" alt="Dialog" width="130"/>
 </p>
