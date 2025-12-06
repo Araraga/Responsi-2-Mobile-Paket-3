@@ -127,15 +127,15 @@ Layer ini berisi kode tampilan yang bereaksi terhadap perubahan State.
 ## Screenshot Aplikasi
 
 <p align="center">
-  <img src="assets/screenshots/login.png" alt="Login" width="130"/>
+  <img src="assets/screenshots/login.png" alt="Login" width="125"/>
   &nbsp;
-  <img src="assets/screenshots/register.png" alt="Register" width="130"/>
+  <img src="assets/screenshots/register.png" alt="Register" width="125"/>
   &nbsp;
-  <img src="assets/screenshots/home_list.png" alt="Home" width="130"/>
+  <img src="assets/screenshots/home_list.png" alt="Home" width="125"/>
   &nbsp;
-  <img src="assets/screenshots/search_sort.png" alt="Search" width="130"/>
+  <img src="assets/screenshots/search_sort.png" alt="Search" width="125"/>
   &nbsp;
-  <img src="assets/screenshots/form_add.png" alt="Form" width="130"/>
+  <img src="assets/screenshots/form_add.png" alt="Form" width="125"/>
   &nbsp;
-  <img src="assets/screenshots/dialog_delete.png" alt="Dialog" width="130"/>
+  <img src="assets/screenshots/dialog_delete.png" alt="Dialog" width="125"/>
 </p>
